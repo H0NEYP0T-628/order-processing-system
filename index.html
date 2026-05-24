@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrderFlow — Enterprise Order System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        /* NAVBAR */
+        nav {
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 22px;
+            font-weight: 700;
+            color: #f97316;
+        }
+        .logo span { color: #e2e8f0; }
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: #f97316; }
+        .nav-badge {
+            background: #f97316;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* HERO */
+        .hero {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1a1040 100%);
+            padding: 80px 2rem;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+        }
+        .hero-badge {
+            display: inline-block;
+            background: rgba(249,115,22,0.15);
+            border: 1px solid rgba(249,115,22,0.4);
+            color: #f97316;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+        .hero h1 {
+            font-size: 52px;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 16px;
+        }
+        .hero h1 span { color: #f97316; }
+        .hero p {
+            font-size: 18px;
+            color: #94a3b8;
+            max-width: 540px;
+            margin: 0 auto 40px;
+            line-height: 1.7;
+        }
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 50px;
+        }
+        .stat { text-align: center; }
+        .stat-num {
+            font-size: 32px;
+            font-weight: 800;
+            color: #f97316;
+        }
+        .stat-label {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        /* MAIN LAYOUT */
+        .main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 60px 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        /* ORDER FORM CARD */
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 32px;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+        .card-icon {
+            width: 44px;
+            height: 44px;
+            background: rgba(249,115,22,0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+        .card-sub {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        /* FORM */
+        .form-group { margin-bottom: 20px; }
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-input {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: #e2e8f0;
+            font-size: 15px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+        .form-input:focus {
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249,115,22,0.15);
+        }
+        .form-input::placeholder { color: #475569; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        select.form-input { cursor: pointer; }
+        select.form-input option { background: #1e293b; }
+
+        .btn-submit {
+            width: 100%;
+            background: #f97316;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-submit:hover { background: #ea6c0a; }
+        .btn-submit:active { transform: scale(0.99); }
+        .btn-submit.loading { background: #7c3f0e; cursor: not-allowed; }
+
+        /* ALERT */
+        .alert {
+            padding: 14px 18px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 16px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+        .alert.success {
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.3);
+            color: #4ade80;
+            display: flex;
+        }
+        .alert.error {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: #f87171;
+            display: flex;
+        }
+
+        /* RIGHT PANEL */
+        .right-panel { display: flex; flex-direction: column; gap: 20px; }
+
+        /* FLOW CARD */
+        .flow-steps { margin-top: 8px; }
+        .flow-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 14px 0;
+            border-bottom: 1px solid #1e3a5f22;
+        }
+        .flow-step:last-child { border-bottom: none; }
+        .step-num {
+            width: 32px;
+            height: 32px;
+            background: rgba(249,115,22,0.15);
+            border: 1px solid rgba(249,115,22,0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #f97316;
+            flex-shrink: 0;
+        }
+        .step-content {}
+        .step-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        .step-desc {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+        .step-badge {
+            font-size: 11px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #94a3b8;
+            padding: 2px 8px;
+            border-radius: 6px;
+            margin-left: 8px;
+        }
+
+        /* SERVICES CARD */
+        .services-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .service-item {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .service-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            flex-shrink: 0;
+            box-shadow: 0 0 6px rgba(34,197,94,0.5);
+        }
+        .service-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        .service-role {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        /* ORDERS TABLE */
+        .orders-section {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 2rem 60px;
+        }
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title span {
+            background: #f97316;
+            color: white;
+            font-size: 12px;
+            padding: 3px 10px;
+            border-radius: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        th {
+            background: #0f172a;
+            padding: 14px 18px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #334155;
+        }
+        td {
+            padding: 14px 18px;
+            font-size: 14px;
+            color: #cbd5e1;
+            border-bottom: 1px solid #1e293b55;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(249,115,22,0.04); }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-processed {
+            background: rgba(34,197,94,0.1);
+            color: #4ade80;
+            border: 1px solid rgba(34,197,94,0.2);
+        }
+        .status-pending {
+            background: rgba(249,115,22,0.1);
+            color: #fb923c;
+            border: 1px solid rgba(249,115,22,0.2);
+        }
+
+        /* FOOTER */
+        footer {
+            background: #1e293b;
+            border-top: 1px solid #334155;
+            padding: 30px 2rem;
+            text-align: center;
+            color: #475569;
+            font-size: 13px;
+        }
+        footer strong { color: #f97316; }
+
+        @media (max-width: 768px) {
+            .main { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 32px; }
+            .hero-stats { gap: 20px; }
+            .form-row { grid-template-columns: 1fr; }
+            .services-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+    <div class="logo">&#9889; Order<span>Flow</span></div>
+    <div class="nav-links">
+        <a href="#order">Place Order</a>
+        <a href="#orders">My Orders</a>
+        <a href="#architecture">Architecture</a>
+    </div>
+    <div class="nav-badge">&#9679; System Live</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-badge">&#9889; Event-Driven Architecture on AWS</div>
+    <h1>Enterprise <span>Order Processing</span><br>System</h1>
+    <p>Real-time order management powered by Amazon SNS, SQS, Lambda & RDS with automatic retry and DLQ handling.</p>
+    <div class="hero-stats">
+        <div class="stat">
+            <div class="stat-num" id="total-orders">0</div>
+            <div class="stat-label">Orders Placed</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num">99.9%</div>
+            <div class="stat-label">Uptime</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num">&lt;1s</div>
+            <div class="stat-label">Processing Time</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num">AWS</div>
+            <div class="stat-label">Cloud Platform</div>
+        </div>
+    </div>
+</section>
+
+<!-- MAIN GRID -->
+<div class="main" id="order">
+
+    <!-- ORDER FORM -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon">&#128722;</div>
+            <div>
+                <div class="card-title">Place New Order</div>
+                <div class="card-sub">Fill the form — processed in real-time</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Customer Name</label>
+            <input type="text" id="customer" class="form-input" placeholder="Enter your full name" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Product Name</label>
+            <input type="text" id="product" class="form-input" placeholder="e.g. Gaming Keyboard" />
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Amount ($)</label>
+                <input type="number" id="amount" class="form-input" placeholder="0.00" min="0" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Category</label>
+                <select id="category" class="form-input">
+                    <option value="Electronics">Electronics</option>
+                    <option value="Gaming">Gaming</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="Books">Books</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="btn-submit" id="submitBtn" onclick="placeOrder()">
+            <span id="btn-text">&#9889; Place Order Now</span>
+        </button>
+
+        <div class="alert" id="alert"></div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+
+        <!-- FLOW CARD -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">&#128260;</div>
+                <div>
+                    <div class="card-title">Order Flow</div>
+                    <div class="card-sub">How your order gets processed</div>
+                </div>
+            </div>
+            <div class="flow-steps">
+                <div class="flow-step">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <div class="step-title">API Gateway <span class="step-badge">REST API</span></div>
+                        <div class="step-desc">Receives order from frontend website</div>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        <div class="step-title">Lambda Function <span class="step-badge">Python 3.12</span></div>
+                        <div class="step-desc">Validates & publishes to SNS topic</div>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        <div class="step-title">SNS + SQS <span class="step-badge">Event Driven</span></div>
+                        <div class="step-desc">Message queued for reliable processing</div>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="step-num">4</div>
+                    <div class="step-content">
+                        <div class="step-title">Amazon RDS <span class="step-badge">MySQL</span></div>
+                        <div class="step-desc">Order stored in database permanently</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AWS SERVICES -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">&#9729;</div>
+                <div>
+                    <div class="card-title">AWS Services</div>
+                    <div class="card-sub">All systems operational</div>
+                </div>
+            </div>
+            <div class="services-grid">
+                <div class="service-item">
+                    <div class="service-dot"></div>
+                    <div>
+                        <div class="service-name">SNS</div>
+                        <div class="service-role">Notifications</div>
+                    </div>
+                </div>
+                <div class="service-item">
+                    <div class="service-dot"></div>
+                    <div>
+                        <div class="service-name">SQS</div>
+                        <div class="service-role">Message Queue</div>
+                    </div>
+                </div>
+                <div class="service-item">
+                    <div class="service-dot"></div>
+                    <div>
+                        <div class="service-name">Lambda</div>
+                        <div class="service-role">Processing</div>
+                    </div>
+                </div>
+                <div class="service-item">
+                    <div class="service-dot"></div>
+                    <div>
+                        <div class="service-name">RDS MySQL</div>
+                        <div class="service-role">Database</div>
+                    </div>
+                </div>
+                <div class="service-item">
+                    <div class="service-dot"></div>
+                    <div>
+                        <div class="service-name">API Gateway</div>
+                        <div class="service-role">REST API</div>
+                    </div>
+                </div>
+                <div class="service-item">
+                    <div class="service-dot"></div>
+                    <div>
+                        <div class="service-name">CloudWatch</div>
+                        <div class="service-role">Monitoring</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ORDERS TABLE -->
+<div class="orders-section" id="orders">
+    <div class="section-title">
+        Recent Orders <span id="order-count">0</span>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Customer</th>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+        <tbody id="orders-body">
+            <tr>
+                <td colspan="7" style="text-align:center; color:#475569; padding: 40px;">
+                    No orders yet. Place your first order above!
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- FOOTER -->
+<footer>
+    Built with &#10084; on <strong>AWS</strong> &mdash; SNS &bull; SQS &bull; Lambda &bull; RDS &bull; API Gateway &bull; CloudWatch
+    <br><br>Event-Driven Enterprise Order Processing System &mdash; Cloud Computing Project 2026
+</footer>
+
+<script>
+    const API_URL = "https://mtxwx3tvj1.execute-api.eu-north-1.amazonaws.com/prod/orders";
+
+    let orders = [];
+    let orderCount = 0;
+
+    async function placeOrder() {
+        const customer = document.getElementById('customer').value.trim();
+        const product = document.getElementById('product').value.trim();
+        const amount = document.getElementById('amount').value;
+        const category = document.getElementById('category').value;
+        const alert = document.getElementById('alert');
+        const btn = document.getElementById('submitBtn');
+
+        alert.className = 'alert';
+        alert.style.display = 'none';
+
+        if (!customer || !product || !amount) {
+            alert.className = 'alert error';
+            alert.innerHTML = '&#9888; Please fill in all required fields!';
+            alert.style.display = 'flex';
+            return;
+        }
+
+        btn.classList.add('loading');
+        btn.disabled = true;
+        document.getElementById('btn-text').textContent = 'Processing...';
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customer_name: customer,
+                    product_name: product,
+                    amount: parseFloat(amount),
+                    category: category
+                })
+            });
+
+            if (response.ok) {
+                orderCount++;
+                const newOrder = {
+                    id: orderCount,
+                    customer,
+                    product,
+                    category,
+                    amount: parseFloat(amount).toFixed(2),
+                    status: 'Processed',
+                    time: new Date().toLocaleTimeString()
+                };
+                orders.unshift(newOrder);
+                updateTable();
+                updateStats();
+
+                alert.className = 'alert success';
+                alert.innerHTML = '&#10003; Order placed successfully! Processing in real-time...';
+                alert.style.display = 'flex';
+
+                document.getElementById('customer').value = '';
+                document.getElementById('product').value = '';
+                document.getElementById('amount').value = '';
+            } else {
+                throw new Error('Server error');
+            }
+        } catch (error) {
+            alert.className = 'alert error';
+            alert.innerHTML = '&#10007; Failed to place order. Check your API URL.';
+            alert.style.display = 'flex';
+        }
+
+        btn.classList.remove('loading');
+        btn.disabled = false;
+        document.getElementById('btn-text').textContent = '&#9889; Place Order Now';
+    }
+
+    function updateTable() {
+        const tbody = document.getElementById('orders-body');
+        if (orders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#475569;padding:40px;">No orders yet.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = orders.map(o => `
+            <tr>
+                <td style="color:#64748b">#${String(o.id).padStart(3,'0')}</td>
+                <td style="font-weight:600;color:#f1f5f9">${o.customer}</td>
+                <td>${o.product}</td>
+                <td><span style="background:#1e3a5f;color:#7dd3fc;padding:3px 10px;border-radius:6px;font-size:12px">${o.category}</span></td>
+                <td style="color:#4ade80;font-weight:600">$${o.amount}</td>
+                <td><span class="status-badge status-processed">&#10003; ${o.status}</span></td>
+                <td style="color:#64748b">${o.time}</td>
+            </tr>
+        `).join('');
+        document.getElementById('order-count').textContent = orders.length;
+    }
+
+    function updateStats() {
+        document.getElementById('total-orders').textContent = orderCount;
+    }
+</script>
+
+</body>
+</html>
